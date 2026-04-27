@@ -1,0 +1,11 @@
+flask
+flask-cors
+transformers
+torch
+librosa
+soundfile
+tensorflow
+scikit-learn
+google-generativeai
+python-dotenv
+numpy

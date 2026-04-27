@@ -68,3 +68,13 @@ export const getSurvey = () => request("/surveys");
 
 // ================= EXERCISES =================
 export const getExercises = () => request("/exercises");
+
+// ================= MESSAGES =================
+export const sendMessage = (content) =>
+  request("/messages", {
+    method: "POST",
+    body: JSON.stringify({ content }),
+  });
+
+export const getMessages = () => request("/messages");
+

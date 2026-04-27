@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { sendMessage, getMessages } from '../services/api';
 
 const ChatPage = () => {
     const { user } = useAuth();
@@ -61,30 +62,77 @@ const ChatPage = () => {
         }
     };
 
-    const handleSend = (e) => {
+    const [isTyping, setIsTyping] = useState(false);
+
+    useEffect(() => {
+        const fetchMessages = async () => {
+            try {
+                const data = await getMessages();
+                if (data.success && data.data.length > 0) {
+                    const formatted = data.data.map(m => ({
+                        id: m._id,
+                        text: m.content,
+                        isSent: m.sender === 'user',
+                        emotionTag: m.emotionTag
+                    }));
+                    setMessages(formatted);
+                }
+            } catch (err) {
+                console.error("Failed to fetch messages:", err);
+            }
+        };
+        fetchMessages();
+    }, []);
+
+    const handleSend = async (e) => {
         if (e) e.preventDefault();
         const trimmedInput = inputValue.trim();
         if (!trimmedInput) return;
 
-        setMessages(prev => [...prev, { id: Date.now(), text: trimmedInput, isSent: true }]);
+        const newUserMsg = { id: Date.now(), text: trimmedInput, isSent: true };
+        setMessages(prev => [...prev, newUserMsg]);
         setInputValue("");
+        setIsTyping(true);
 
-        setTimeout(() => {
+        try {
+            const data = await sendMessage(trimmedInput);
+            if (data.success) {
+                const aiMsg = data.data.aiMessage;
+                setMessages(prev => [
+                    ...prev,
+                    { id: aiMsg._id, text: aiMsg.content, isSent: false }
+                ]);
+            }
+        } catch (error) {
+            console.error("Send failed:", error);
             setMessages(prev => [
                 ...prev,
-                { id: Date.now() + 1, text: "I'm here for you. Tell me more about that.", isSent: false }
+                { id: Date.now() + 1, text: "I'm having a bit of trouble connecting to my brain. Please try again in a moment.", isSent: false }
             ]);
-        }, 1200);
+        } finally {
+            setIsTyping(false);
+        }
     };
 
-    const handleOptionClick = (option) => {
-        setMessages(prev => [...prev, { id: Date.now(), text: `I am feeling ${option.label.toLowerCase()} ${option.emoji}`, isSent: true }]);
-        setTimeout(() => {
-            setMessages(prev => [
-                ...prev,
-                { id: Date.now() + 1, text: `I understand. It's completely okay to feel ${option.label.toLowerCase()}. What's on your mind?`, isSent: false }
-            ]);
-        }, 1000);
+    const handleOptionClick = async (option) => {
+        const text = `I am feeling ${option.label.toLowerCase()} ${option.emoji}`;
+        setMessages(prev => [...prev, { id: Date.now(), text, isSent: true }]);
+        setIsTyping(true);
+
+        try {
+            const data = await sendMessage(text);
+            if (data.success) {
+                const aiMsg = data.data.aiMessage;
+                setMessages(prev => [
+                    ...prev,
+                    { id: aiMsg._id, text: aiMsg.content, isSent: false }
+                ]);
+            }
+        } catch (error) {
+            console.error("Option click failed:", error);
+        } finally {
+            setIsTyping(false);
+        }
     };
 
     return (
@@ -139,6 +187,18 @@ const ChatPage = () => {
                             </div>
                         </div>
                     ))}
+                    {isTyping && (
+                        <div className="flex justify-start items-end gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-sm shadow-sm shrink-0">
+                                🪴
+                            </div>
+                            <div className="bg-white text-gray-400 px-5 py-3 rounded-[24px] rounded-bl-none border border-gray-50 flex gap-1 items-center shadow-sm">
+                                <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce"></div>
+                                <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                                <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                            </div>
+                        </div>
+                    )}
                     <div ref={messagesEndRef} />
                 </div>
             </div>
