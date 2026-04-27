@@ -51,6 +51,18 @@
 
 ---
 
+## حل مشكلة الـ (MongoDB Error) 🛠️
+لو ظهر لصاحبك إيرور فيه `querySrv ECONNREFUSED` أو `ECONNRESET` ده معناه إن الشبكة عنده قافلة الـ DNS بتاع أطلس.
+
+**الحل:**
+يستخدم الرابط المباشر (Standard Connection String) بدلاً من `+srv` في ملف الـ `.env`:
+
+```env
+MONGO_URI=mongodb://mohamedehab:mohamedehab7@ac-2snafe2-shard-00-00.f9qpppx.mongodb.net:27017,ac-2snafe2-shard-00-01.f9qpppx.mongodb.net:27017,ac-2snafe2-shard-00-02.f9qpppx.mongodb.net:27017/?ssl=true&replicaSet=atlas-xziulm-shard-0&authSource=admin&retryWrites=true&w=majority
+```
+
+---
+
 ## ملاحظة هامة (Important Note)
 لو واجه مشكلة في الاتصال بـ MongoDB من الجهاز بتاعه، لازم يتأكد إن الـ IP بتاعه مضاف في الـ **Whitelist** في MongoDB Atlas dashboard.
 
