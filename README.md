@@ -61,6 +61,10 @@
 MONGO_URI=mongodb://mohamedehab:mohamedehab7@ac-2snafe2-shard-00-00.f9qpppx.mongodb.net:27017,ac-2snafe2-shard-00-01.f9qpppx.mongodb.net:27017,ac-2snafe2-shard-00-02.f9qpppx.mongodb.net:27017/?ssl=true&replicaSet=atlas-xziulm-shard-0&authSource=admin&retryWrites=true&w=majority
 ```
 
+### مشكلة الـ (usenewurlparser) ❌
+لو ظهر إيرور بيقول إن `usenewurlparser` أو `useunifiedtopology` مش مدعومين (not supported):
+**الحل:** امسح الاختيارات دي من كود الـ `mongoose.connect` في ملف `server.js`. النسخ الجديدة من Mongoose مش محتاجة الاختيارات دي.
+
 ---
 
 ## ملاحظة هامة (Important Note)
